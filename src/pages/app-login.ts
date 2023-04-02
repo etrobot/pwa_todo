@@ -3,7 +3,7 @@ import { property, customElement, } from 'lit/decorators.js';
 
 @customElement('app-login')
 export class AppLogin extends LitElement {
-  @property({ type: String }) email = '';
+  @property({ type: String }) username = '';
   @property({ type: String }) password = '';
 
   static get styles() {
@@ -49,13 +49,13 @@ export class AppLogin extends LitElement {
   async handleSubmit(event: Event) {
     event.preventDefault();
 
-    const response = await fetch('http://localhost:5000/api/users/login', {
+    const response = await fetch('http://localhost:8080/api/login', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        email: this.email,
+        username: this.username,
         password: this.password
       })
     });
@@ -64,7 +64,7 @@ export class AppLogin extends LitElement {
       const data = await response.json();
       localStorage.setItem('token', data.token);
       this.dispatchEvent(new CustomEvent('login-success'));
-      window.location.href = 'about';
+      window.location.href = 'home';
     } else {
       const error = await response.text();
       this.dispatchEvent(new CustomEvent('login-error', { detail: error }));
@@ -74,12 +74,12 @@ export class AppLogin extends LitElement {
   render() {
     return html`
       <form @submit=${this.handleSubmit}>
-        <label for="email">email:</label>
+        <label for="username">username:</label>
         <input
           type="text"
-          id="email"
-          .value=${this.email}
-          @input=${(e: any) => (this.email = e.target.value)}
+          id="username"
+          .value=${this.username}
+          @input=${(e: any) => (this.username = e.target.value)}
         />
 
         <label for="password">Password:</label>
