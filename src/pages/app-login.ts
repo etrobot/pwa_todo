@@ -63,8 +63,26 @@ export class AppLogin extends LitElement {
     if (response.ok) {
       const data = await response.json();
       localStorage.setItem('token', data.token);
-      this.dispatchEvent(new CustomEvent('login-success'));
-      window.location.href = 'home';
+
+      const createConversationResponse = await fetch('http://localhost:8080/api/create_conversation', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${data.token}`
+        },
+        body: JSON.stringify({
+          // conversation data
+        })
+      });
+
+      if (createConversationResponse.ok) {
+        // redirect to home after successful conversation creation
+        window.location.href = '/';
+      } else {
+        const error = await createConversationResponse.text();
+        this.dispatchEvent(new CustomEvent('create-conversation-error', { detail: error }));
+      }
+
     } else {
       const error = await response.text();
       this.dispatchEvent(new CustomEvent('login-error', { detail: error }));
@@ -90,7 +108,7 @@ export class AppLogin extends LitElement {
           @input=${(e: any) => (this.password = e.target.value)}
         />
 
-        <button type="submit">Login</button>
+        <sl-button type="submit" pill>Login</sl-button>
 
       </form>
     `;

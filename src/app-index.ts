@@ -41,8 +41,8 @@ export class AppIndex extends LitElement {
         path: BASE_URL,
         animate: true,
         children: [
-          { path: '', component: 'app-login' },
-          { path: 'home', component: 'app-home' },
+          { path: 'login', component: 'app-login' },
+          { path: '', component: 'app-home' },
           {
             path: 'about',
             component: 'app-about',
