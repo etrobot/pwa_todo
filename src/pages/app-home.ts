@@ -11,10 +11,29 @@ import { styles as sharedStyles } from '../styles/shared-styles';
 @customElement('app-home')
 export class AppHome extends LitElement {
   @property({ type: Array }) conversations = [];
-  @property({ type: Array }) currentTasks=[];
+  @property({ type: Array }) currentTasks = [];
+  @property({ type: Number }) currentPage=1;
   @property({ type: Array }) prompts: String[] = [];
   @property({ type: Boolean }) waiting = false;
   @property({ type: Object }) headers = {};
+
+  connectedCallback() {
+    super.connectedCallback();
+    this.init();
+  }
+
+  async init() {
+    const id = new URL(window.location.href).searchParams.get('id');
+    if (id) {
+      this.currentPage = parseInt(id, 10);
+    }
+    await this.getTasksByConversationId(this.currentPage);
+  }
+
+  goToPage(id: number) {
+    window.history.pushState({}, '', `/${id}`);
+    this.getTasksByConversationId(id);
+  }
 
   static styles = [
     sharedStyles,
@@ -55,8 +74,7 @@ export class AppHome extends LitElement {
     console.log(currentConversaionId);
     fetch(`http://localhost:8080/api/get_task?conversationId=${currentConversaionId}`, { headers: this.headers }).then(response => response.json())
     .then(data => {console.log(data);this.currentTasks=data});
-    this.requestUpdate();
-    this.handleClick();
+    this.requestUpdate()
   }
 
 
@@ -100,7 +118,7 @@ export class AppHome extends LitElement {
       <aside class="sidebar">
         <div class="sidebar-nav">
           <ul>
-          ${this.conversations.map(conversation => html`<li @click='${()=>this.getTasksByConversationId(conversation[0])}'>${conversation[0]} ${conversation[1]}</li>`)}
+          ${this.conversations.map(conversation => html`<li><a href='${conversation[0]}'>${conversation[0]} ${conversation[1]}</a></li>`)}
           </ul>
         </div>
       </aside>

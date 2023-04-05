@@ -43,6 +43,7 @@ export class AppIndex extends LitElement {
         children: [
           { path: 'login', component: 'app-login' },
           { path: '', component: 'app-home' },
+          { path: '/:id', component: 'app-home'},
           {
             path: 'about',
             component: 'app-about',
