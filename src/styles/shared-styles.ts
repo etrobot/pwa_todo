@@ -14,6 +14,9 @@ body {
   flex-direction: column;
 }
 
+li{
+        cursor: pointer;
+}
   @media(min-width: 1000px) {
     sl-card {
       max-width: 70vw;

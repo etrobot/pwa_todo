@@ -1,6 +1,9 @@
 import { LitElement, css, html } from 'lit';
 import { property, customElement, } from 'lit/decorators.js';
 
+import '@shoelace-style/shoelace/dist/components/input/input.js';
+
+
 @customElement('app-login')
 export class AppLogin extends LitElement {
   @property({ type: String }) username = '';
@@ -14,32 +17,6 @@ export class AppLogin extends LitElement {
         align-items: center;
         margin-top: 20px;
       }
-
-      input {
-        margin-bottom: 10px;
-        padding: 5px;
-        border-radius: 5px;
-        border: none;
-        box-shadow: 2px 2px 2px rgba(0, 0, 0, 0.2);
-        width: 200px;
-        font-size: 16px;
-      }
-
-      button {
-        margin-top: 10px;
-        padding: 5px 10px;
-        border: none;
-        border-radius: 5px;
-        background-color: #007bff;
-        color: white;
-        font-size: 16px;
-        cursor: pointer;
-      }
-
-      button:hover {
-        background-color: #0069d9;
-      }
-
       .error {
         color: red;
       }
@@ -91,24 +68,29 @@ export class AppLogin extends LitElement {
 
   render() {
     return html`
-      <form @submit=${this.handleSubmit}>
-        <label for="username">username:</label>
-        <input
-          type="text"
+      <form class="input-validation-required" @submit=${this.handleSubmit}>
+      <br />
+        <sl-input
+          type="email"
           id="username"
+          label="Username"
           .value=${this.username}
           @input=${(e: any) => (this.username = e.target.value)}
-        />
-
-        <label for="password">Password:</label>
-        <input
+          placeholder="you@example.com"
+          required
+        ></sl-input>
+        <br />
+        <sl-input
+        label="Password"
           type="password"
           id="password"
+          placeholder="password"
           .value=${this.password}
           @input=${(e: any) => (this.password = e.target.value)}
-        />
-
-        <sl-button type="submit" pill>Login</sl-button>
+          required
+        ></sl-input>
+        <br />
+        <sl-button type="submit" variant="primary" pill>Login</sl-button>
 
       </form>
     `;

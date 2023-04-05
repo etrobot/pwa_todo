@@ -11,8 +11,10 @@ import { styles as sharedStyles } from '../styles/shared-styles';
 @customElement('app-home')
 export class AppHome extends LitElement {
   @property({ type: Array }) conversations = [];
-  @property({ type: Array }) prompts = [];
+  @property({ type: Array }) currentTasks=[];
+  @property({ type: Array }) prompts: String[] = [];
   @property({ type: Boolean }) waiting = false;
+  @property({ type: Object }) headers = {};
 
   static styles = [
     sharedStyles,
@@ -26,24 +28,37 @@ export class AppHome extends LitElement {
 
   async firstUpdated() {
     var token = localStorage.getItem('token');
+    this.headers = {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    }
     if (token == null) {
       window.location.href = 'login';
     }
     var token = localStorage.getItem('token');
     fetch('http://localhost:8080/api/conversations', {
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
+      headers: this.headers
     })
       .then(response => response.json())
       .then(data => {
         console.log(data);
         this.conversations = data;
+        var currentConversaionId = data[0][0]
+        fetch(`http://localhost:8080/api/get_task?conversationId=${currentConversaionId}`, { headers: this.headers }).then(response => response.json())
+        .then(data => {console.log(data);this.currentTasks=data});
         this.requestUpdate();
       })
       .catch(error => console.error(error));
   }
+
+  async getTasksByConversationId(currentConversaionId:Number){
+    console.log(currentConversaionId);
+    fetch(`http://localhost:8080/api/get_task?conversationId=${currentConversaionId}`, { headers: this.headers }).then(response => response.json())
+    .then(data => {console.log(data);this.currentTasks=data});
+    this.requestUpdate();
+    this.handleClick();
+  }
+
 
   async handleSend() {
     const input = this.renderRoot.querySelector('sl-textarea');
@@ -53,10 +68,27 @@ export class AppHome extends LitElement {
       input.value = '';
       const button = this.renderRoot.querySelector('#send');
       if (button) {
-        // button.setAttribute('disabled','');
+        button.setAttribute('disabled','');
         this.prompts = [...this.prompts, message];
         this.waiting = true;
       }
+      var token = localStorage.getItem('token');
+      const taskdata = { 'conversationId': this.conversations[0], 'prompt': message };
+      fetch('http://localhost:8080/api/create_task', {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        method:'POST',
+        body: JSON.stringify(taskdata)
+      })
+        .then(response => response.json())
+        .then(data => {
+          console.log(data);
+          this.conversations = data;
+          this.requestUpdate();
+        })
+        .catch(error => console.error(error));
     }
   }
 
@@ -68,7 +100,7 @@ export class AppHome extends LitElement {
       <aside class="sidebar">
         <div class="sidebar-nav">
           <ul>
-          ${this.conversations.map(conversation => html`<li><a href='#'>${conversation[0]} ${conversation[1]}</a></li>`)}
+          ${this.conversations.map(conversation => html`<li @click='${()=>this.getTasksByConversationId(conversation[0])}'>${conversation[0]} ${conversation[1]}</li>`)}
           </ul>
         </div>
       </aside>
