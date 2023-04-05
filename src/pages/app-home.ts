@@ -3,6 +3,7 @@ import { property, customElement } from 'lit/decorators.js';
 
 import '@shoelace-style/shoelace/dist/components/button/button.js';
 import '@shoelace-style/shoelace/dist/components/textarea/textarea.js';
+import '@shoelace-style/shoelace/dist/components/card/card.js';
 
 import { styles as sharedStyles } from '../styles/shared-styles';
 
@@ -10,6 +11,9 @@ import { styles as sharedStyles } from '../styles/shared-styles';
 @customElement('app-home')
 export class AppHome extends LitElement {
   @property({ type: Array }) conversations = [];
+  @property({ type: Array }) prompts = [];
+  @property({ type: Boolean }) waiting = false;
+
   static styles = [
     sharedStyles,
   ]
@@ -19,7 +23,6 @@ export class AppHome extends LitElement {
     if (sidebar)
       sidebar.classList.toggle('show');
   }
-
 
   async firstUpdated() {
     var token = localStorage.getItem('token');
@@ -40,7 +43,21 @@ export class AppHome extends LitElement {
         this.requestUpdate();
       })
       .catch(error => console.error(error));
+  }
 
+  async handleSend() {
+    const input = this.renderRoot.querySelector('sl-textarea');
+    if (input && input.value == '') return;
+    if (input) {
+      const message = input.value;
+      input.value = '';
+      const button = this.renderRoot.querySelector('#send');
+      if (button) {
+        // button.setAttribute('disabled','');
+        this.prompts = [...this.prompts, message];
+        this.waiting = true;
+      }
+    }
   }
 
   render() {
@@ -56,12 +73,22 @@ export class AppHome extends LitElement {
         </div>
       </aside>
       <section class="content">
-      <footer>
-        <div><sl-textarea rows="3" placeholder="Type a message..." filled
-                spellcheck="false"></sl-textarea><sl-button variant="primary" pill>Send</sl-button>
-        </div>
-      </footer>
-  </section>
+        <div class='scroll'>
+        ${this.prompts.map((prompt) => html`
+          <div class="prompt">
+            <sl-card>
+              <sl-card-body>${prompt}</sl-card-body>
+            </sl-card>
+          </div>
+          <div>
+          <sl-card><sl-spinner></sl-spinner></sl-card>
+            </div>
+        `)}  </div>
+      </section>
+      <footer >
+            <sl-textarea rows="3" placeholder="Type a message..." filled spellcheck="false"></sl-textarea>
+            <sl-button id='send' variant="primary" pill @click="${this.handleSend}">Send</sl-button>
+        </footer>
     `;
   }
 }

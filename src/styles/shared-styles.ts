@@ -1,25 +1,31 @@
 import { css } from 'lit';
 
+
 // these styles can be imported from any component
 // for an example of how to use this, check /pages/about-about.ts
 export const styles = css`
+
+html, body {
+  height: 100%;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+}
+
   @media(min-width: 1000px) {
     sl-card {
       max-width: 70vw;
     }
   }
 
-  main {
-    margin-top: 80px;
-  }
-
   .show {
         display:None;
       }
-      .sidebar {
-  background-color:var(--sl-panel-background-color);
+  .sidebar {
+  background-color:var(--sl-color-neutral-0);
   border-right: 1px solid rgba(0,0,0,0.07);
-  overflow-y: auto;
   padding: 40px 0 0;
   position: absolute;
   top: 0;
@@ -90,8 +96,7 @@ export const styles = css`
   background: rgba(136,136,136,0.1);
 }
 .sidebar-toggle {
-  background-color: transparent;
-  background-color: rgba(255,255,255,0.8);
+  background-color:inherit;
   border: 0;
   outline: none;
   padding: 10px;
@@ -107,8 +112,6 @@ export const styles = css`
   opacity: 0.4;
 }
 .sidebar-toggle span {
-  background-color: #000;
-  background-color: var(--theme-color, #000);
   display: block;
   margin-bottom: 4px;
   width: 16px;
@@ -119,25 +122,46 @@ body.sticky .sidebar-toggle {
   position: fixed;
 }
 .content {
-    padding-top: 60px;
+  width:calc(100% - 320px);
+    padding-right:10px;
+    align-items:bottom;
     position: absolute;
     top: 0;
-    right: 20px;
-    bottom: 0;
-    left: 320px;
+    right: 0;
+    bottom: 160px;
+    overflow-y:hidden
 }
 footer {
-    width:100%;
+  background-color:var(--sl-color-neutral-0);
+  padding:10px;
+  right:0;
+  width:calc(100% - 320px);
+    display: block;
     position: absolute;
-    bottom: 6px;
+    bottom: 0;
 }
 footer sl-button{
   padding:0.5rem;
-  width:100%
+  width:100%;
+  align-items: flex-end;
+}
+
+.prompt {
+  text-align:right;
+  align-items:right
+}
+
+div{
+  margin-top:5px;
+}
+
+.sidebar, .content {
+  overflow-y: scroll;
 }
 
 @media screen and (max-width: 768px) {
         .content{
+          width:calc(100% - 20px);
           left:10px;
         }
         .sidebar {
@@ -147,7 +171,7 @@ footer sl-button{
           display:block;
         }
         footer{
-          width:100%;
+          width:calc(100% - 20px);
         }
       }
 `;
