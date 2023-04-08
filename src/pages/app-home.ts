@@ -12,40 +12,16 @@ import { styles as sharedStyles } from '../styles/shared-styles';
 export class AppHome extends LitElement {
   @property({ type: Array }) conversations = [];
   @property({ type: Array }) currentTasks = [];
-  @property({ type: Number }) currentPage=1;
+  @property({ type: Number }) currentPage=-1;
   @property({ type: Array }) prompts: String[] = [];
   @property({ type: Boolean }) waiting = false;
   @property({ type: Object }) headers = {};
-
-  connectedCallback() {
-    super.connectedCallback();
-    this.init();
-  }
-
-  async init() {
-    const id = new URL(window.location.href).searchParams.get('id');
-    if (id) {
-      this.currentPage = parseInt(id, 10);
-    }
-    await this.getTasksByConversationId(this.currentPage);
-  }
-
-  goToPage(id: number) {
-    window.history.pushState({}, '', `/${id}`);
-    this.getTasksByConversationId(id);
-  }
 
   static styles = [
     sharedStyles,
   ]
 
-  handleClick() {
-    const sidebar = this.renderRoot.querySelector('.sidebar');
-    if (sidebar)
-      sidebar.classList.toggle('show');
-  }
-
-  async firstUpdated() {
+  async firstUpdated(){
     var token = localStorage.getItem('token');
     this.headers = {
       'Content-Type': 'application/json',
@@ -54,16 +30,26 @@ export class AppHome extends LitElement {
     if (token == null) {
       window.location.href = 'login';
     }
-    var token = localStorage.getItem('token');
-    fetch('http://localhost:8080/api/conversations', {
+    await this.getConverstions();
+  }
+
+  handleClick() {
+    const sidebar = this.renderRoot.querySelector('.sidebar');
+    if (sidebar)
+      sidebar.classList.toggle('show');
+  }
+
+  async getConverstions(){
+    fetch('http://192.168.1.4:8080/api/conversations', {
       headers: this.headers
     })
       .then(response => response.json())
       .then(data => {
-        console.log(data);
-        this.conversations = data;
-        var currentConversaionId = data[0][0]
-        fetch(`http://localhost:8080/api/get_task?conversationId=${currentConversaionId}`, { headers: this.headers }).then(response => response.json())
+        this.conversations=data;
+        var currentPageId = window.location.pathname.split('/').pop();
+        console.log('currentPageId:'+currentPageId);
+        if(!currentPageId)currentPageId=data[0][0];
+        fetch(`http://192.168.1.4:8080/api/get_task?conversationId=${currentPageId}`, { headers: this.headers }).then(response => response.json())
         .then(data => {console.log(data);this.currentTasks=data});
         this.requestUpdate();
       })
@@ -71,8 +57,10 @@ export class AppHome extends LitElement {
   }
 
   async getTasksByConversationId(currentConversaionId:Number){
-    console.log(currentConversaionId);
-    fetch(`http://localhost:8080/api/get_task?conversationId=${currentConversaionId}`, { headers: this.headers }).then(response => response.json())
+    if(currentConversaionId==-1){
+      currentConversaionId=this.conversations[0][0];
+    }
+    fetch(`http://192.168.1.4:8080/api/get_task?conversationId=${currentConversaionId}`, { headers: this.headers }).then(response => response.json())
     .then(data => {console.log(data);this.currentTasks=data});
     this.requestUpdate()
   }
@@ -80,7 +68,7 @@ export class AppHome extends LitElement {
 
   async handleSend() {
     const input = this.renderRoot.querySelector('sl-textarea');
-    if (input && input.value == '') return;
+    if (input && (input.value == '' || input.value.charAt(0)!='/')) return;
     if (input) {
       const message = input.value;
       input.value = '';
@@ -92,7 +80,7 @@ export class AppHome extends LitElement {
       }
       var token = localStorage.getItem('token');
       const taskdata = { 'conversationId': this.conversations[0], 'prompt': message };
-      fetch('http://localhost:8080/api/create_task', {
+      fetch('http://192.168.1.4:8080/api/create_task', {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
@@ -118,7 +106,7 @@ export class AppHome extends LitElement {
       <aside class="sidebar">
         <div class="sidebar-nav">
           <ul>
-          ${this.conversations.map(conversation => html`<li><a href='${conversation[0]}'>${conversation[0]} ${conversation[1]}</a></li>`)}
+          ${this.conversations.map(conversation => html`<li><a .href='${conversation[0]}'>${conversation[0]} ${conversation[1]}</a></li>`)}
           </ul>
         </div>
       </aside>
