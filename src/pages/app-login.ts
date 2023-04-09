@@ -26,7 +26,7 @@ export class AppLogin extends LitElement {
   async handleSubmit(event: Event) {
     event.preventDefault();
 
-    const response = await fetch('http://localhost:8080/api/login', {
+    const response = await fetch('http://192.168.1.4:8080/api/login', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -41,7 +41,7 @@ export class AppLogin extends LitElement {
       const data = await response.json();
       localStorage.setItem('token', data.token);
 
-      const createConversationResponse = await fetch('http://localhost:8080/api/create_conversation', {
+      const createConversationResponse = await fetch('http://192.168.1.4:8080/api/create_conversation', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
