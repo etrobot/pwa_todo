@@ -14,6 +14,11 @@ body {
   flex-direction: column;
 }
 
+img{
+  width:200px;
+  object-fit: cover;
+}
+
 li{
         cursor: pointer;
 }
@@ -142,10 +147,10 @@ footer {
     display: block;
     position: absolute;
     bottom: 0;
+  text-align :right
 }
-footer sl-button{
-  padding:0.5rem;
-  width:100%;
+footer #send{
+  width:20%;
   align-items: flex-end;
 }
 

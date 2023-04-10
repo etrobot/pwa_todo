@@ -25,7 +25,20 @@ interface Task {
 @customElement('app-home')
 export class AppHome extends LitElement {
   @property({ type: Array }) conversations = [];
-  @property({ type: Array }) currentTasks:Task[] = [];
+  @property({ type: Array }) currentTasks:Task[] = [{
+    id: 1,
+    conversationId: '1',
+    createTime: '',
+    accountId: 666,
+    prompt: 'dddddddddd',
+    resultUrl: 'etrobot_street_fighter_gamepixel_style_ken_vs_cammy_in_a_chines_e85aa6d2-055e-4bd2-9ec7-3834fde4910f.png',
+    msgId: '77777777',
+    oriMsgId: '',
+    msgType: '',
+    updateTime: '',
+    remark: ''
+
+  }];
   @property({ type: Number }) currentPage = -1;
   @property({ type: Array }) prompts: String[] = [];
   @property({ type: Boolean }) waiting = false;
@@ -75,6 +88,10 @@ export class AppHome extends LitElement {
     this.requestUpdate()
   }
 
+  async addPrefix(e:Event){
+    const input = this.renderRoot.querySelector('sl-textarea');
+    if(input)input.value=(e.target as Element).textContent!+' '+input.value
+  }
 
   async handleSend() {
     const input = this.renderRoot.querySelector('sl-textarea');
@@ -105,10 +122,22 @@ export class AppHome extends LitElement {
     }
   }
 
+  async optImg(e: Event){
+    const buttonText =  (e.target as Element).textContent!;
+    const msgId=(e.target as Element).getAttribute('Key')!;
+    console.log(msgId+buttonText)
+    fetch('http://192.168.1.4:8080/api/create_task', {
+        headers: this.headers,
+        method: 'POST',
+        body: JSON.stringify({'msgId':msgId,'opt':buttonText})
+      })
+        .then(response => response.json())
+  }
+
   render() {
     return html`
       <button class="sidebar-toggle" aria-label="Menu" @click="${this.handleClick}">
-        <div class="sidebar-toggle-button"><sl-button pill size="small">></sl-button></div>
+        <div class="sidebar-toggle-button"><sl-button size="small">></sl-button></div>
       </button>
       <aside class="sidebar">
         <div class="sidebar-nav">
@@ -121,23 +150,25 @@ export class AppHome extends LitElement {
         <div class='scroll'>
         ${this.currentTasks.map((task) => html`
           <div class="task">
-          <sl-card class="card-overview">
-  <img
-    slot="image"
-    .src="${task.resultUrl}"
-  />${task.prompt}
-  <div slot="footer">
-  <sl-button variant="primary" pill>V1</sl-button>
-  <sl-button variant="primary" pill>V2</sl-button>
-  <sl-button variant="primary" pill>V3</sl-button>
-  <sl-button variant="primary" pill>V4</sl-button>
-    <sl-button variant="primary" pill>🔄</sl-button><br>
-    <sl-button variant="primary" pill>U1</sl-button>
-  <sl-button variant="primary" pill>U2</sl-button>
-  <sl-button variant="primary" pill>U3</sl-button>
-  <sl-button variant="primary" pill>U4</sl-button>
-  </div>
-</sl-card>
+          <sl-card class="card-basic">
+          <img
+            slot="image"
+            .src="${task.resultUrl}"
+          /><div>${task.prompt}</div>
+          <div>
+          <sl-button size="small" @click="${this.optImg}" key='${task.msgId}'>U1</sl-button>
+          <sl-button size="small" @click="${this.optImg}" key='${task.msgId}'>U2</sl-button>
+          <sl-button size="small" @click="${this.optImg}" key='${task.msgId}'>U3</sl-button>
+          <sl-button size="small" @click="${this.optImg}" key='${task.msgId}'>U4</sl-button>
+            <sl-button size="small" @click="${this.optImg}" key='${task.msgId}'>🔄</sl-button>
+          </div>
+            <div>
+            <sl-button size="small" @click="${this.optImg}" key='${task.msgId}'>V1</sl-button>
+          <sl-button size="small" @click="${this.optImg}" key='${task.msgId}'>V2</sl-button>
+          <sl-button size="small" @click="${this.optImg}" key='${task.msgId}'>V3</sl-button>
+          <sl-button size="small" @click="${this.optImg}" key='${task.msgId}'>V4</sl-button>
+        </div>
+        </sl-card>
             </div>
         `)}
         ${this.prompts.map((prompt) => html`
@@ -153,7 +184,10 @@ export class AppHome extends LitElement {
       </section>
       <footer >
             <sl-textarea rows="3" placeholder="Type a message..." filled spellcheck="false"></sl-textarea>
-            <sl-button id='send' variant="primary" pill @click="${this.handleSend}">Send</sl-button>
+            <div>
+            <sl-button pill @click="${this.addPrefix}">/imagine</sl-button>
+            <sl-button variant="primary" pill id='send' @click="${this.handleSend}" >Send</sl-button>
+            </div>
         </footer>
     `;
   }
